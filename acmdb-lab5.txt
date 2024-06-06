@@ -1,0 +1,16 @@
+用时15h（4天断续）
+困难：在同名的两个transactioncomplete遇到报错，成功debug；在VScode上尝试查看死锁时遇到困难。
+
+EX1
+一个页其实是可以有多个锁的（排它锁），而锁只能对应一个页，所以页与锁是一对多的关系。而锁与事务之间可以看出也是一对多的关系。因此可以构造关于PageLock的类
+，然后构造lockmanager。还需补齐释放锁、以及完善之前getPage关于事务的逻辑
+
+EX2
+主要还是完善getPage,以及调用getPage的相关锁的部分，因为获取锁的部分都在getPage（）。主要的调用就在与HeapFile的insertTuple()，deleteTuple()，iterator() 等方法,以及需要check下是否把页变更为了脏页。而解锁部分则由Test代码调用transactionComplete（）释放
+
+Ex3
+事务的修改只在提交后写入磁盘。我们可以通过丢弃脏页并从磁盘重新读取它们来中止事务（回滚）
+
+EX4
+transactionComplete（）在事务成功完成时，需要将磁盘中的脏页全部刷新到磁盘，若事务失败时则需要回滚：将磁盘中的反向刷新到BufferPool。
+释放掉事务所拥有的所有锁。完成S2PL的释放阶段
